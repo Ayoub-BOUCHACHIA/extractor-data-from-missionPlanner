@@ -7,7 +7,7 @@ from subprocess import check_output
 def get_pid(name):
     return check_output(["pidof",name])
 
-def mission(id,pos_start,pos_end,wrong_way):
+def mission(id,pos_start,pos_end,wrong_way,max_dist):
     os.system('clear')
     print('lunsh drone kit sitl ...')
     proc_drone_kit_sitl = lunsh_drone_kit_sitl(pos_start)
@@ -25,7 +25,7 @@ def mission(id,pos_start,pos_end,wrong_way):
 
     os.system('clear')
     print('lunsh mission ...')
-    lunsh_mission(pos_end,wrong_way)
+    lunsh_mission(id,pos_end,wrong_way,max_dist)
 
     print('terminate process ...')
 
@@ -53,26 +53,21 @@ region = {
     Longitude: 1 deg => 111.320*cos(latitude) km
 """
 
-dist = 0.6
-lat_deg = dist / 110.574
+max_dist = 600
+"""lat_deg = dist / 110.574
 long_deg =  dist / (111.320 * math.cos(lat_deg))
 dist_deg = math.sqrt(lat_deg**2+long_deg**2)
-i = 0
-while i< 10:
+"""
+i = 185
+while i < 1000:
     pos_start = ",".join([
         str(random.uniform(region['long_top'], region['long_bottom'])),
         str(random.uniform(region['lat_left'], region['lat_right']))
         ])+ ",0," + str(random.randint(region['alt_min'], region['alt_max']))
-    
-    teta = random.uniform(0, 360)
-
-
-    lat_end = dist_deg*math.cos(teta)
-    long_end = dist_deg*math.sin(teta)
 
     pos_end = ",".join([
-        str(lat_end),
-        str(long_end)
+        str(random.uniform(region['long_top'], region['long_bottom'])),
+        str(random.uniform(region['lat_left'], region['lat_right']))
         ])+ ",0," + str(random.randint(region['alt_min'], region['alt_max']))
 
     if i % 2 == 0:
@@ -83,5 +78,5 @@ while i< 10:
     print("pos_start : ",pos_start)
     print("pos_end : ",pos_end)
     print('wrong_way : ',wrong_way)
-    mission(i,pos_start,pos_end,wrong_way)
+    mission(i,pos_start,pos_end,wrong_way,max_dist)
     i+=1

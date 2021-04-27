@@ -23,7 +23,7 @@ def lunsh_drone_kit_sitl(location='36.714032117441164,3.181058984340110,0,1'):
     return proc
 
 
-def lunsh_mission(pos_end,wrong_way):
+def lunsh_mission(id,pos_end,wrong_way,max_dist):
     connection_string = "udp:127.0.0.1:14552"
     # Connect to the Vehicle
     print('Connecting to vehicle on: %s' % connection_string)
@@ -50,11 +50,19 @@ def lunsh_mission(pos_end,wrong_way):
     # Demonstrates getting and setting the command number 
     # Uses distance_to_current_waypoint(), a convenience function for finding the 
     # distance to the next waypoint.
+
     data_trace = []
+    distance_waypoint = None
     while True:
+
         nextwaypoint=vehicle.commands.next
         distance = drone_manager.distance_to_current_waypoint()
-        print('Distance to waypoint (%s): %s' % (nextwaypoint, distance))
+        if distance_waypoint is None:
+            if distance is not None:
+                distance_waypoint = distance
+
+        if distance_waypoint :
+            print('Distance to waypoint (%s): %s' % (nextwaypoint, distance_waypoint - drone_manager.distance_to_current_waypoint()))    
 
         """
         if nextwaypoint==3: #Skip to next waypoint
@@ -79,7 +87,10 @@ def lunsh_mission(pos_end,wrong_way):
         time.sleep(1)
         if distance ==  drone_manager.distance_to_current_waypoint():
             break
-
+        
+        if distance_waypoint:
+            if max_dist <= (distance_waypoint - drone_manager.distance_to_current_waypoint()) :
+                break
 
 
     #Close vehicle object before exiting script
@@ -88,11 +99,11 @@ def lunsh_mission(pos_end,wrong_way):
 
 
     #save data in csv file
-    with open("data_trace.csv","w") as result:
+    with open("legitimate/data_trace_%d.csv" % id,"w") as result:
         writer = csv.writer(result)
         writer.writerow(['position_start_x','position_start_y','position_end_x','position_end_y','type'])
         #writer.writerow([pos_start_x,pos_start_y,pos_end_x,pos_end_y, 1 ])
-
+        writer.writerow([data_trace[0][4],data_trace[0][5],data_trace[-1][4],data_trace[-1][5]])
         line = ['attitude','pitch','yaw','roll','lon','lat']
         writer.writerow(line)
 
