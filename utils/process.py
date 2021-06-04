@@ -75,7 +75,7 @@ class Drone_manager:
 
 
 
-    def adds_square_mission(self,pos_end, aSize,wrong_way):
+    def adds_square_mission(self,pos_list, aSize):
         """
         Adds a takeoff command and four waypoint commands to the current mission. 
         The waypoints are positioned to form a square of side length 2*aSize around the specified LocationGlobal (aLocation).
@@ -94,17 +94,22 @@ class Drone_manager:
         
         #Add MAV_CMD_NAV_TAKEOFF command. This is ignored if the vehicle is already in the air.
         cmds.add(Command( 0, 0, 0, mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT, mavutil.mavlink.MAV_CMD_NAV_TAKEOFF, 0, 0, 0, 0, 0, 0, 0, 0, 10))
-
+        
         #Define the four MAV_CMD_NAV_WAYPOINT locations and add the commands
         
-        [newlat,newlon,_,alt] = pos_end.split(",")
+        for i in range(1,len(pos_list)):
+            [newlat,newlon,_,alt] = pos_list[i].split(",")
+            point = LocationGlobal(float(newlat), float(newlon),int(alt))
+            cmds.add(Command( 0, 0, 0, mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT, mavutil.mavlink.MAV_CMD_NAV_WAYPOINT, 0, 0, 0, 0, 0, 0, point.lat, point.lon, int(alt)))
+            
+        [newlat,newlon,_,alt] = pos_list[0].split(",")
         point = LocationGlobal(float(newlat), float(newlon),int(alt))
-        if wrong_way:
-            point_dev = LocationGlobal(float(newlat)-0.01, float(newlon)-0.01,int(alt))
-            cmds.add(Command( 0, 0, 0, mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT, mavutil.mavlink.MAV_CMD_NAV_WAYPOINT, 0, 0, 0, 0, 0, 0, point_dev.lat, point_dev.lon, int(alt)))
-
         cmds.add(Command( 0, 0, 0, mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT, mavutil.mavlink.MAV_CMD_NAV_WAYPOINT, 0, 0, 0, 0, 0, 0, point.lat, point.lon, int(alt)))
 
+        [newlat,newlon,_,alt] = pos_list[0].split(",")
+        point = LocationGlobal(float(newlat), float(newlon),int(alt))
+        cmds.add(Command( 0, 0, 0, mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT, mavutil.mavlink.MAV_CMD_NAV_WAYPOINT, 0, 0, 0, 0, 0, 0, point.lat, point.lon, int(alt)))
+        
         print(" Upload new commands to vehicle")
         cmds.upload()
 

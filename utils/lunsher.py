@@ -23,7 +23,7 @@ def lunsh_drone_kit_sitl(location='36.714032117441164,3.181058984340110,0,1'):
     return proc
 
 
-def lunsh_mission(id,pos_end,wrong_way,max_dist):
+def lunsh_mission(id,pos_list):
     connection_string = "udp:127.0.0.1:14552"
     # Connect to the Vehicle
     print('Connecting to vehicle on: %s' % connection_string)
@@ -32,7 +32,7 @@ def lunsh_mission(id,pos_end,wrong_way,max_dist):
     drone_manager = Drone_manager(vehicle)
 
     print('Create a new mission (for current location)')
-    drone_manager.adds_square_mission(pos_end,50,wrong_way)
+    drone_manager.adds_square_mission(pos_list,50)
 
 
     # From Copter 3.3 you will be able to take off using a mission item. Plane must take off using a mission item (currently).
@@ -52,18 +52,16 @@ def lunsh_mission(id,pos_end,wrong_way,max_dist):
     # distance to the next waypoint.
 
     data_trace = []
-    distance_waypoint = None
     while True:
 
         nextwaypoint=vehicle.commands.next
-        distance = drone_manager.distance_to_current_waypoint()
-        if distance_waypoint is None:
-            if distance is not None:
-                distance_waypoint = distance
 
-        if distance_waypoint :
-            print('Distance to waypoint (%s): %s' % (nextwaypoint, distance_waypoint - drone_manager.distance_to_current_waypoint()))    
+        # distance = drone_manager.distance_to_current_waypoint()
+        # if distance_waypoint is None:
+        #     if distance is not None:
+        #         distance_waypoint = distance
 
+        
         """
         if nextwaypoint==3: #Skip to next waypoint
             print('Skipping to Waypoint 5 when reach waypoint 3')
@@ -84,12 +82,10 @@ def lunsh_mission(id,pos_end,wrong_way,max_dist):
         data_trace.append(instance)
         print(instance)
 
-        time.sleep(1)
-        if distance ==  drone_manager.distance_to_current_waypoint():
-            break
         
-        if distance_waypoint:
-            if max_dist <= (distance_waypoint - drone_manager.distance_to_current_waypoint()) :
+        time.sleep(1)        
+        print('------------------------->',nextwaypoint)
+        if nextwaypoint == len(pos_list)+1:
                 break
 
 
